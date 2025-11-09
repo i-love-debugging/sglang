@@ -1,0 +1,97 @@
+{
+    "1": {
+        "backend_type": "flashinfer_fusion",
+        "use_residual_rmsnorm_fusion": true,
+        "backend_name": "flashinfer_fusion"
+    },
+    "2": {
+        "backend_type": "flashinfer_fusion",
+        "use_residual_rmsnorm_fusion": true,
+        "backend_name": "flashinfer_fusion"
+    },
+    "32": {
+        "backend_type": "flashinfer_fusion",
+        "use_residual_rmsnorm_fusion": true,
+        "backend_name": "flashinfer_fusion"
+    },
+    "40": {
+        "backend_type": "flashinfer_fusion",
+        "use_residual_rmsnorm_fusion": true,
+        "backend_name": "flashinfer_fusion"
+    },
+    "48": {
+        "backend_type": "flashinfer_fusion",
+        "use_residual_rmsnorm_fusion": true,
+        "backend_name": "flashinfer_fusion"
+    },
+    "56": {
+        "backend_type": "flashinfer_fusion",
+        "use_residual_rmsnorm_fusion": true,
+        "backend_name": "flashinfer_fusion"
+    },
+    "64": {
+        "backend_type": "flashinfer_fusion",
+        "use_residual_rmsnorm_fusion": true,
+        "backend_name": "flashinfer_fusion"
+    },
+    "72": {
+        "backend_type": "flashinfer_fusion",
+        "use_residual_rmsnorm_fusion": true,
+        "backend_name": "flashinfer_fusion"
+    },
+    "80": {
+        "backend_type": "flashinfer_fusion",
+        "use_residual_rmsnorm_fusion": true,
+        "backend_name": "flashinfer_fusion"
+    },
+    "88": {
+        "backend_type": "flashinfer_fusion",
+        "use_residual_rmsnorm_fusion": true,
+        "backend_name": "flashinfer_fusion"
+    },
+    "96": {
+        "backend_type": "flashinfer_fusion",
+        "use_residual_rmsnorm_fusion": true,
+        "backend_name": "flashinfer_fusion"
+    },
+    "104": {
+        "backend_type": "flashinfer_fusion",
+        "use_residual_rmsnorm_fusion": true,
+        "backend_name": "flashinfer_fusion"
+    },
+    "112": {
+        "backend_type": "flashinfer_fusion",
+        "use_residual_rmsnorm_fusion": true,
+        "backend_name": "flashinfer_fusion"
+    },
+    "120": {
+        "backend_type": "flashinfer_fusion",
+        "use_residual_rmsnorm_fusion": true,
+        "backend_name": "flashinfer_fusion"
+    },
+    "128": {
+        "backend_type": "flashinfer_fusion",
+        "use_residual_rmsnorm_fusion": true,
+        "backend_name": "flashinfer_fusion"
+    },
+    "136": {
+        "backend_type": "torch_symm_mem",
+        "use_residual_rmsnorm_fusion": false,
+        "backend_name": "torch_symm_mem"
+    },
+    "144": {
+        "backend_type": "torch_symm_mem",
+        "use_residual_rmsnorm_fusion": false,
+        "backend_name": "torch_symm_mem"
+    },
+    "256": {
+        "backend_type": "torch_symm_mem",
+        "use_residual_rmsnorm_fusion": false,
+        "backend_name": "torch_symm_mem"
+    },
+    "512": {
+        "backend_type": "torch_symm_mem",
+        "use_residual_rmsnorm_fusion": false,
+        "backend_name": "torch_symm_mem"
+    }
+}

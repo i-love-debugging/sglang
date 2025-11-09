@@ -361,11 +361,19 @@ class LayerCommunicator:
         if batch_size > FUSE_ALLREDUCE_MAX_BATCH_SIZE:
             return False
 
+        # When adaptive allreduce is enabled, disable the original flashinfer fusion logic
+        # to allow adaptive backend selection
+        server_args = get_global_server_args()
+        use_flashinfer_fusion = (
+            server_args.enable_flashinfer_allreduce_fusion
+            and not server_args.enable_adaptive_allreduce
+        )
+        
         static_conditions_met = (
             (not self.is_last_layer)
             and (self._context.tp_size > 1)
             and not is_dp_attention_enabled()
-            and get_global_server_args().enable_flashinfer_allreduce_fusion
+            and use_flashinfer_fusion
             and _is_flashinfer_available
         )
 
@@ -562,13 +570,46 @@ class CommunicateWithAllReduceAndLayerNormFn:
                 if hidden_states.shape[0] != 0:
                     hidden_states = layernorm(hidden_states)
         else:
+            server_args = get_global_server_args()
+            
+            # Use adaptive allreduce if enabled
+            if server_args.enable_adaptive_allreduce:
+                from sglang.srt.layers.allreduce import get_adaptive_allreduce_layer
+                from sglang.srt.layers.flashinfer_comm_fusion import _workspace_manager
+                
+                # Get adaptive allreduce layer for this hidden_size
+                hidden_size = hidden_states.shape[-1]
+                flashinfer_workspace = (
+                    _workspace_manager.workspace_tensor 
+                    if _workspace_manager.initialized 
+                    else None
+                )
+                
+                adaptive_layer = get_adaptive_allreduce_layer(
+                    hidden_size=hidden_size,
+                    flashinfer_workspace_tensor=flashinfer_workspace,
+                )
+                
+                if adaptive_layer is not None:
+                    # Use adaptive allreduce layer
+                    hidden_states, residual = adaptive_layer.select_backend_and_allreduce(
+                        hidden_states=hidden_states,
+                        residual=residual,
+                        layernorm=layernorm,
+                    )
+                else:
+                    # Fallback to standard NCCL if adaptive layer is not available
+                    hidden_states = tensor_model_parallel_all_reduce(hidden_states)
+                    if context.cache is not None:
+                        _ = prepare_weight_cache(hidden_states, context.cache)
+                    hidden_states, residual = layernorm(hidden_states, residual)
             # According to the discussion in https://github.com/flashinfer-ai/flashinfer/issues/1223#issuecomment-3047256465
             # We set the max token num to 128 for allreduce fusion with min-latency case(use_oneshot=True).
-            if (
+            elif (
                 (_is_sm100_supported or _is_sm90_supported)
                 and _is_flashinfer_available
                 and hasattr(layernorm, "forward_with_allreduce_fusion")
-                and get_global_server_args().enable_flashinfer_allreduce_fusion
+                and server_args.enable_flashinfer_allreduce_fusion
                 and hidden_states.shape[0] <= 4096
             ):
                 hidden_states, residual = layernorm.forward_with_allreduce_fusion(
