@@ -68,7 +68,7 @@ class AdaptiveAllReduceManager:
         )
 
         self.torch_symm_mem_communicator = TorchSymmMemCommunicator(
-            group=get_tp_group().device_group,
+            group=get_tp_group().cpu_group,  # Must use cpu_group for symmetric memory
             device=device,
         )
         if not self.torch_symm_mem_communicator.disabled:
