@@ -360,8 +360,9 @@ class WanTransformerBlock(nn.Module):
         self.scale_shift_table = nn.Parameter(torch.randn(1, 6, dim) / dim**0.5)
 
         # Pre-create fixed tensors to avoid repeated allocation in forward
-        self.register_buffer("null_shift", torch.zeros(1), persistent=False)
-        self.register_buffer("null_scale", torch.zeros(1), persistent=False)
+        # Use plain attributes instead of buffers to avoid FSDP meta device issues
+        self.null_shift = None
+        self.null_scale = None
 
         # Double stream for parallel computation
         self.alt_stream = None
@@ -401,6 +402,15 @@ class WanTransformerBlock(nn.Module):
         assert shift_msa.dtype == torch.float32
 
         # 1. Self-attention with fused QKV
+        # Lazy initialize fixed tensors on first forward pass
+        if self.null_shift is None:
+            self.null_shift = torch.zeros(
+                1, device=hidden_states.device, dtype=torch.float32
+            )
+            self.null_scale = torch.zeros(
+                1, device=hidden_states.device, dtype=torch.float32
+            )
+
         norm1 = self.norm1(hidden_states.float())
         norm_hidden_states = (norm1 * (1 + scale_msa) + shift_msa).to(orig_dtype)
 
@@ -554,8 +564,9 @@ class WanTransformerBlock_VSA(nn.Module):
         self.scale_shift_table = nn.Parameter(torch.randn(1, 6, dim) / dim**0.5)
 
         # Pre-create fixed tensors to avoid repeated allocation in forward
-        self.register_buffer("null_shift", torch.zeros(1), persistent=False)
-        self.register_buffer("null_scale", torch.zeros(1), persistent=False)
+        # Use plain attributes instead of buffers to avoid FSDP meta device issues
+        self.null_shift = None
+        self.null_scale = None
 
         # Double stream for parallel computation
         self.alt_stream = None
@@ -581,6 +592,15 @@ class WanTransformerBlock_VSA(nn.Module):
         assert shift_msa.dtype == torch.float32
 
         # 1. Self-attention with fused QKVG
+        # Lazy initialize fixed tensors on first forward pass
+        if self.null_shift is None:
+            self.null_shift = torch.zeros(
+                1, device=hidden_states.device, dtype=torch.float32
+            )
+            self.null_scale = torch.zeros(
+                1, device=hidden_states.device, dtype=torch.float32
+            )
+
         norm_hidden_states = (
             self.norm1(hidden_states.float()) * (1 + scale_msa) + shift_msa
         ).to(orig_dtype)
