@@ -1,10 +1,14 @@
+import os
 import unittest
+
+# Disable JIT DeepGemm BEFORE importing sglang modules (must be at module level)
+os.environ["SGLANG_ENABLE_JIT_DEEPGEMM"] = "0"
 
 from sglang.test.accuracy_test_runner import AccuracyTestParams
 from sglang.test.ci.ci_register import register_cuda_ci
 from sglang.test.performance_test_runner import PerformanceTestParams
 from sglang.test.run_combined_tests import run_combined_tests
-from sglang.test.test_utils import ModelLaunchSettings
+from sglang.test.test_utils import ModelLaunchSettings, is_blackwell_system
 
 # Runs on both H200 and B200 via nightly-8-gpu-common suite
 register_cuda_ci(est_time=12000, suite="nightly-8-gpu-common", nightly=True)
@@ -28,12 +32,16 @@ class TestQwen3235BUnified(unittest.TestCase):
 
     def test_qwen3_235b_aime25(self):
         """Run performance and AIME25 accuracy for Qwen3-235B-FP8."""
+        # Use flashinfer_trtllm on B200, flashinfer on H200
+        # (flashinfer_trtllm has SM 10.0 detection bug on H200)
+        moe_backend = "flashinfer_trtllm" if is_blackwell_system() else "flashinfer"
+
         base_args = [
             "--tp=8",
             "--ep=8",
             "--trust-remote-code",
             "--attention-backend=triton",
-            "--moe-runner-backend=flashinfer_trtllm",
+            f"--moe-runner-backend={moe_backend}",
         ]
 
         variants = [
@@ -59,12 +67,15 @@ class TestQwen3235BUnified(unittest.TestCase):
 
     def test_qwen3_235b_gpqa(self):
         """Run GPQA accuracy for Qwen3-235B-FP8 (performance already tested in AIME25)."""
+        # Use flashinfer_trtllm on B200, flashinfer on H200
+        moe_backend = "flashinfer_trtllm" if is_blackwell_system() else "flashinfer"
+
         base_args = [
             "--tp=8",
             "--ep=8",
             "--trust-remote-code",
             "--attention-backend=triton",
-            "--moe-runner-backend=flashinfer_trtllm",
+            f"--moe-runner-backend={moe_backend}",
         ]
 
         variants = [
