@@ -30,6 +30,7 @@ class TestQwen3235BUnified(unittest.TestCase):
         """Run performance and AIME25 accuracy for Qwen3-235B-FP8."""
         base_args = [
             "--tp=8",
+            "--ep=8",
             "--trust-remote-code",
             "--attention-backend=triton",
             "--moe-runner-backend=flashinfer_trtllm",
@@ -60,6 +61,7 @@ class TestQwen3235BUnified(unittest.TestCase):
         """Run GPQA accuracy for Qwen3-235B-FP8 (performance already tested in AIME25)."""
         base_args = [
             "--tp=8",
+            "--ep=8",
             "--trust-remote-code",
             "--attention-backend=triton",
             "--moe-runner-backend=flashinfer_trtllm",
