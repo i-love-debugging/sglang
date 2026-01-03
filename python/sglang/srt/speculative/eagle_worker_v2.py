@@ -132,7 +132,10 @@ class EagleDraftWorker(BaseDraftWorker):
                 req_to_token_pool=self.req_to_token_pool,
                 token_to_kv_pool_allocator=self.token_to_kv_pool_allocator,
             )
-
+        print(
+            f"Draft worker tp_size: {self.draft_worker.tp_size}, tp_rank: {self.draft_worker.tp_rank}, dp_rank: {self.draft_worker.dp_rank}"
+        )
+        print(f"Draft worker tp_group: {self.draft_runner.tp_group}")
         # Alias for better readability
         self.draft_runner = self.draft_worker.model_runner
 
