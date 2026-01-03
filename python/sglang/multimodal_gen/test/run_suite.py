@@ -9,10 +9,11 @@ Example:
 """
 
 import argparse
-import os
 import subprocess
 import sys
 from pathlib import Path
+
+import tabulate
 
 from sglang.multimodal_gen.runtime.utils.logging_utils import init_logger
 
@@ -255,13 +256,15 @@ def main():
         if i % args.total_partitions == args.partition_id
     ]
 
-    print(
-        f"Suite: {args.suite} | Partition: {args.partition_id}/{args.total_partitions}"
-    )
-    print(f"Selected {len(suite_files_abs)} files:")
-    for f in suite_files_abs:
-        print(f"  - {os.path.basename(f)}")
-    print(f"Running {len(my_items)} items in this shard: {', '.join(my_items)}")
+    # Print test info at beginning (similar to test/run_suite.py pretty_print_tests)
+    partition_info = f"{args.partition_id + 1}/{args.total_partitions} (0-based id={args.partition_id})"
+    headers = ["Suite", "Partition"]
+    rows = [[args.suite, partition_info]]
+    msg = tabulate.tabulate(rows, headers=headers, tablefmt="psql") + "\n"
+    msg += f"✅ Enabled {len(my_items)} test(s):\n"
+    for item in my_items:
+        msg += f"  - {item}\n"
+    print(msg, flush=True)
 
     if not my_items:
         print("No items assigned to this partition. Exiting success.")
@@ -269,6 +272,14 @@ def main():
 
     # 4. execute with the specific test items
     exit_code = run_pytest(my_items)
+
+    # Print tests again at the end for visibility
+    msg = "\n" + tabulate.tabulate(rows, headers=headers, tablefmt="psql") + "\n"
+    msg += f"✅ Executed {len(my_items)} test(s):\n"
+    for item in my_items:
+        msg += f"  - {item}\n"
+    print(msg, flush=True)
+
     sys.exit(exit_code)
 
 
